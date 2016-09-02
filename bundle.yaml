@@ -1,12 +1,15 @@
 machines:
   '0':
-    constraints: tags=mitaka
+    constraints: arch=amd64
     series: xenial
   '1':
-    constraints: mem=32G
+    constraints: arch=amd64
     series: xenial
   '2':
-    constraints: mem=32G
+    constraints: arch=amd64
+    series: xenial
+  '3':
+    constraints: arch=amd64
     series: xenial
 relations:
 - - keystone:shared-db
@@ -41,7 +44,7 @@ services:
       block-device: None
       glance-api-version: 2
     to:
-    - lxc:0
+    - lxc:1
   cinder-ceph:
     annotations:
       gui-x: '750'
@@ -55,7 +58,7 @@ services:
     charm: cs:xenial/glance-2
     num_units: 1
     to:
-    - lxc:0
+    - lxc:2
   keystone:
     annotations:
       gui-x: '500'
@@ -65,7 +68,7 @@ services:
     options:
       admin-password: openstack
     to:
-    - lxc:0
+    - lxc:3
   mysql:
     annotations:
       gui-x: '0'
@@ -83,7 +86,7 @@ services:
     charm: cs:xenial/openstack-dashboard-2
     num_units: 1
     to:
-    - lxc:0
+    - lxc:3
   rabbitmq-server:
     annotations:
       gui-x: '500'
