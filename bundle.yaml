@@ -3,10 +3,7 @@ machines:
     constraints: tags=mitaka
     series: xenial
   '1':
-    constraints: mem=32G
-    series: xenial
-  '2':
-    constraints: mem=32G
+    constraints: mem=3G
     series: xenial
 relations:
 - - nova-compute:amqp
@@ -104,7 +101,6 @@ services:
       osd-reformat: 'yes'
     to:
     - '1'
-    - '2'
   ceph-radosgw:
     annotations:
       gui-x: '1000'
@@ -210,7 +206,6 @@ services:
       migration-auth-type: ssh
     to:
     - '1'
-    - '2'
   ntp:
     annotations:
       gui-x: '1000'
