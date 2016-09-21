@@ -3,7 +3,7 @@ machines:
     constraints: tags=mitaka
     series: xenial
   '1':
-    constraints: mem=3G
+    constraints: tags=compute
     series: xenial
 relations:
 - - nova-compute:amqp
