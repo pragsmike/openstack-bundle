@@ -5,6 +5,12 @@ machines:
   '1':
     constraints: tags=compute
     series: xenial
+  '2':
+    constraints: tags=compute
+    series: xenial
+  '3':
+    constraints: tags=compute
+    series: xenial
 relations:
 - - nova-compute:amqp
   - rabbitmq-server:amqp
@@ -89,7 +95,9 @@ services:
     options:
       expected-osd-count: 3
     to:
-    - lxd:0
+    - lxc:1
+    - lxc:2
+    - lxc:3
   ceph-osd:
     annotations:
       gui-x: '1000'
@@ -101,6 +109,8 @@ services:
       osd-reformat: 'yes'
     to:
     - '1'
+    - '2'
+    - '3'
   ceph-radosgw:
     annotations:
       gui-x: '1000'
@@ -110,7 +120,7 @@ services:
     options:
       use-embedded-webserver: true
     to:
-    - lxd:0
+    - lxc:0
   cinder:
     annotations:
       gui-x: '750'
@@ -121,7 +131,7 @@ services:
       block-device: None
       glance-api-version: 2
     to:
-    - lxd:0
+    - lxc:1
   cinder-ceph:
     annotations:
       gui-x: '750'
@@ -135,7 +145,7 @@ services:
     charm: cs:xenial/glance-2
     num_units: 1
     to:
-    - lxd:0
+    - lxc:2
   keystone:
     annotations:
       gui-x: '500'
@@ -145,7 +155,7 @@ services:
     options:
       admin-password: openstack
     to:
-    - lxd:0
+    - lxc:3
   mysql:
     annotations:
       gui-x: '0'
@@ -155,7 +165,7 @@ services:
     options:
       max-connections: 20000
     to:
-    - lxd:0
+    - lxc:0
   neutron-api:
     annotations:
       gui-x: '500'
@@ -166,7 +176,7 @@ services:
       neutron-security-groups: true
       flat-network-providers: physnet1
     to:
-    - lxd:0
+    - lxc:1
   neutron-gateway:
     annotations:
       gui-x: '0'
@@ -177,7 +187,7 @@ services:
       bridge-mappings: physnet1:br-ex
       data-port: br-ex:eth1
     to:
-    - lxd:0
+    - '0'
   neutron-openvswitch:
     annotations:
       gui-x: '250'
@@ -193,19 +203,21 @@ services:
     options:
       network-manager: Neutron
     to:
-    - lxd:0
+    - lxc:2
   nova-compute:
     annotations:
       gui-x: '250'
       gui-y: '250'
     charm: cs:xenial/nova-compute-2
-    num_units: 2
+    num_units: 3
     options:
       enable-live-migration: true
       enable-resize: true
       migration-auth-type: ssh
     to:
     - '1'
+    - '2'
+    - '3'
   ntp:
     annotations:
       gui-x: '1000'
@@ -219,7 +231,7 @@ services:
     charm: cs:xenial/openstack-dashboard-2
     num_units: 1
     to:
-    - lxd:0
+    - lxc:3
   rabbitmq-server:
     annotations:
       gui-x: '500'
@@ -227,4 +239,4 @@ services:
     charm: cs:xenial/rabbitmq-server-5
     num_units: 1
     to:
-    - lxd:0
+    - lxc:0

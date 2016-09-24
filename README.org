@@ -1,0 +1,9 @@
+#+TITLE: OpenStack Mitaka
+
+Adapted from Juju openstack-bundle and conjure-up openstack-base.
+
+| Machine |                 |
+|       0 | neutron-gateway |
+|       1 | ceph-osd        |
+|       1 | nova-compute    |
+|
