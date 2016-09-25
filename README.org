@@ -2,8 +2,40 @@
 
 Adapted from Juju openstack-bundle and conjure-up openstack-base.
 
-| Machine |                 |
-|       0 | neutron-gateway |
-|       1 | ceph-osd        |
-|       1 | nova-compute    |
-|
+| Machine |                       |          |         |
+| 0       | neutron-gateway       | gorb     | network |
+| lxd:0   | ceph-radosgw          |          |         |
+| lxd:0   | mysql                 |          |         |
+| lxd:0   | rabbitmq-server       |          |         |
+| 1       | nova-compute          | wrat     | compute |
+| 1       | ceph-osd              |          |         |
+| lxd:1   | neutron-api           |          |         |
+| lxd:1   | ceph-mon              |          |         |
+| lxd:1   | cinder                |          |         |
+| 2       | nova-compute          | thompson | compute |
+| 2       | ceph-osd              |          |         |
+| lxd:2   | nova-cloud-controller |          |         |
+| lxd:2   | ceph-mon              |          |         |
+| lxd:2   | glance                |          |         |
+| 3       | nova-compute          | pratt    | compute |
+| 3       | ceph-osd              |          |         |
+| lxd:3   | ceph-mon              |          |         |
+| lxd:3   | keystone              |          |         |
+| lxd:3   | openstack-dashboard   |          |         |
+
+
+| johnson | enx00051ba17ddf | 00:05:1b:a1:7d:df |
+
+| yock     | x6magm |
+| sissy    | ndnaen |
+| johnson  | sprwsk |
+| gorb     | fwsdbt |
+| wrat     | bf3mxr |
+| juju     | tamdhn |
+| thompson | qxkwtb |
+| light    | msqmxt |
+| pratt    | dssbr8 |
+| maas     | 4y3h7n |
+
+
+lxc config device add maas nic cluster nictype=bridged parent=br4
