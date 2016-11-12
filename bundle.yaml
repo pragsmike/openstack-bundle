@@ -92,10 +92,11 @@ services:
       gui-y: '500'
     charm: cs:xenial/ceph-mon-6
     num_units: 3
+    bindings:
+      public: storage-data
+      cluster: storage-cluster
     options:
       expected-osd-count: 3
-      ceph-cluster-network: 10.30.0.0/20
-      ceph-public-network: 10.200.0.0/20
     to:
     - lxd:1
     - lxd:2
@@ -106,11 +107,12 @@ services:
       gui-y: '500'
     charm: cs:xenial/ceph-osd-239
     num_units: 3
+    bindings:
+      public: storage-data
+      cluster: storage-cluster
     options:
       osd-devices: '/dev/sdb /dev/sdc /dev/sdd /dev/sde /dev/sdf /dev/nvme1n1'
       osd-reformat: 'yes'
-      ceph-cluster-network: 10.30.0.0/20
-      ceph-public-network: 10.200.0.0/20
     to:
     - '1'
     - '2'
@@ -121,6 +123,10 @@ services:
       gui-y: '250'
     charm: cs:xenial/ceph-radosgw-245
     num_units: 1
+    bindings:
+      public: public-api
+      admin: internal-api
+      internal: internal-api
     options:
       use-embedded-webserver: true
     to:
@@ -250,7 +256,10 @@ services:
     annotations:
       gui-x: '500'
       gui-y: '250'
-    charm: cs:xenial/rabbitmq-server-54
+#    charm: cs:xenial/rabbitmq-server-54
+    charm: cs:~thedac/rabbitmq-server-3
     num_units: 1
+    bindings:
+      amqp: internal-api
     to:
     - lxd:0
