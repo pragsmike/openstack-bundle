@@ -2,8 +2,79 @@
 
 Adapted from Juju openstack-bundle and conjure-up openstack-base.
 
-| Machine |                 |
-|       0 | neutron-gateway |
-|       1 | ceph-osd        |
-|       1 | nova-compute    |
-|
+[[https://jujucharms.com/u/openstack-charmers/openstack-lxd][Newton w/LXD Hypervisor]]
+
+[[http://bazaar.launchpad.net/~ost-maintainers/openstack-charm-testing/trunk/files/256][Multi-hypervisor example]]
+
+[[https://linuxcontainers.org/lxd/getting-started-openstack/][Getting Started with LXD on OpenStack]]
+
+#+BEGIN_SRC
+<vmorris> pragsmike: i think the way is to use yakkity, yeah?
+<vmorris> or overwrite openstack-origin-git option and set it to newton
+<vmorris> if you want to stay on xenial
+<vmorris> pragsmike: I think this is right.. somebody else here will call me out if it's not
+<vmorris> pragsmike: in case you haven't seen it yet, you ought to be following this guide: http://docs.openstack.org/developer/charm-guide/openstack-on-lxd.html
+<beisner> hi vmorris, pragsmike - so there are two different perspectives of lxd here: 1. the juju lxd provider (while not openstack-specific, the openstack-on-lxd guide is a usage example);  and 2. nova-lxd (nova-compute spawns lxd instances instead of kvm instances in an openstack cloud).  a xenial-newton with nova-lxd example bundle is here: https://jujucharms.com/u/openstack-charmers/openstack-lxd
+<vmorris> beisner: oic
+<vmorris> nova-lxd, well what'll they think of next
+<vmorris> ^^
+<beisner> then ... there's the inception world where you deploy nova-lxd inside openstack-on-lxd, or some such (PoC/test)
+<beisner> nova-lxd is quite a powerful/disruptive thing potentially.  check this out: https://github.com/ubuntu-openstack/bigdata-novalxd
+<beisner> (tldr: graph at the bottom of the readme)
+<vmorris> i noticed you mentioned spark early on, but this was really hadoop yeah?
+<vmorris> disclaimer: i am not a big data guy.. but i these are two different things yeah?
+<vmorris> oic you're running the spark for anomaly detection job, but pushing it through a hadoop cluster?
+<vmorris> answering my own q: https://databricks.com/blog/2014/01/21/spark-and-hadoop.html
+<vmorris> I'm a bit more interested in nova-lxd inside openstack-on-lxd... though that is a bit too much to wrap my head around right now
+<openstackgerrit> gecong proposed openstack/charm-barbican: Fix a typo  https://review.openstack.org/385232
+<beisner> vmorris, ah right, yep used both.  but that's just a workload. the interesting  bit there is how close to bare metal performance you can get with such an intense workload vs. kvm
+<beisner> so if you just blackbox that bigdata thing and rinse and replace with <workload-of-choice>, win:win most likely
+<vmorris> :D yeah it's neat
+<vmorris> beisner: btw, just confirmed that lvm+iscsi works fine with the nova-compute-proxy charm
+<beisner> sweet, thanks vmorris
+<vmorris> though i did have to do some manual steps to get cinder to get happy
+<vmorris> creating the pv and vg
+<beisner> vmorris, excellent.  mind raising a LP bug @ https://bugs.launchpad.net/charm-nova-compute-proxy to document the manual steps necessary.  we can turn that bug into a development to-do item.
+<beisner> s/./?./
+<vmorris> beisner: I can do this, but I'm a bit concerned that the observed behavior is due to me ripping out a non-functioning cinder-ceph backend
+<vmorris> i did not redeploy cinder, just removed the unit and added to a new machine, altering the config to point to the block storage device
+<beisner> oh i see.  so perhaps a fresh go is in order?
+<vmorris> beisner: yeah, though only so many hours in the day ^^ i might get back to it
+<vmorris> since it's working for me, i've got some other things i'd like to test out
+<beisner> yeah, hear ya. i'm in one of those modes as well.
+<openstackgerrit> gecong proposed openstack/charm-barbican: Fix a typo in barbican.conf  https://review.openstack.org/405028
+* cholcombe has quit (Remote host closed the connection)
+* vmorris has quit (Quit: Leaving)
+* cholcombe (~chris@c-73-180-29-35.hsd1.or.comcast.net) has joined
+<pragsmike> vmorris, beisner: thanks for the pointers!
+* zhhuabj has quit (Ping timeout: 265 seconds)
+<pragsmike> i'd been looking at https://jujucharms.com/u/openstack-charmers-next/openstack-lxd
+<pragsmike> I noticed that neither of those bundles deploys cinder
+zhhuabj (~Zhang@103.192.224.56) has joined
+<beisner> pragsmike, cinder block storage with with nova-lxd is a relatively new thing feature-wise.  we may not have a published example just yet.
+<pragsmike> ah, ok
+<pragsmike> still trying to understand how that would work
+<pragsmike> beisner: is it possible to have some nova-compute units use kvm, while others use lxd?
+<beisner> pragsmike, indeed.  one can deploy nova-compute, and nova-lxd in the
+same model.  that's a pretty mature thing, but we don't have a charm
+store bundle to point to as an example.  we've got a poc/test/ci bundle
+which may be a bit dated but should illustrate the principle and allow
+one to craft a bundle to suit.
+
+<beisner> pragsmike, example:
+http://bazaar.launchpad.net/~ost-maintainers/openstack-charm-testing/trunk/view/head:/README-multihypervisor.md
+(caveat - this needs to be refreshed for juju 2.x and all the new goods, but shouldn't be much different).
+<pragsmike> beisner: thanks, I'll take a look.  I'm thinking the instances that need durable volumes (cinder ceph) will go on kvm,
+and nova-lxd will accomodate lots of CPU-heavy-but-no-storage instances.
+<beisner> pragsmike, yep, and as block storage support for nova-lxd matures, you'll see some gains there.
+actually, even for local instance storage with nova-lxd, i saw a huge gain over the same with nova-kvm.
+<pragsmike> beisner: people have reported getting more than 10x the number of instances with lxd over kvm,
+is that plausible?
+<pragsmike> on the same host box, that is
+<beisner> pragsmike, depends on workload.  we saw 14x with some middle-of-the-road workloads.
+even with intensive applications like bigdata, even a 2 or 3x gain is 2 or 3x win
+in cloud capacity for something else. ;-)
+<beisner> that big data exercise has pieces that are disk i/o heavy, some compute heavy,
+and some mem and network centric.  removing the emulation has various levels of
+improvement in each department.
+#+END_SRC
